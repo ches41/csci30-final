@@ -72,7 +72,80 @@ class SeamCarver(Picture):
         Return a sequence of indices representing the lowest-energy
         horizontal seam
         '''
-        raise NotImplementedError
+        
+        # transpose the actual image
+        
+        original_image = {}
+        transposed_image = {}
+        
+        og_width = self.width()
+        og_height = self.height()
+        new_width = self.height()
+        new_height = self.width()
+        
+        # save old image
+        
+        column = 0
+        row = 0
+        
+        while (row < og_height):
+            while (column < og_width):
+                original_image[row][column] = self[row, column]
+                column += 1
+            column = 0
+            row += 1
+            
+        # create transposed image
+            
+        column = 0
+        row = 0
+            
+        while (row < new_height):
+            while (column < new_width):
+                transposed_image[row][column] = self[(abs((og_width-1)-column)), row]
+                column += 1
+            column = 0
+            row += 1
+            
+        self.clear()
+        
+        column = 0
+        row = 0
+                
+        while (row < new_height):
+            while (column < new_width):
+                self[row, column] = transposed_image[row][column]
+                column += 1
+            column = 0
+            row += 1
+        
+        # run vertical seam on transposed image
+        
+        horizontal_seam = self.find_vertical_seam()
+        
+        # convert values in horizontal seam
+        
+        pixel = 0
+        
+        while (pixel < (len(horizontal_seam)-1)):
+            horizontal_seam[pixel] = abs((og_height-1)-horizontal_seam[pixel])
+            pixel += 1
+        
+        # revert image to original
+        
+        self.clear()
+        
+        column = 0
+        row = 0
+                
+        while (row < og_height):
+            while (column < og_width):
+                self[row, column] = original_image[row][column]
+                column += 1
+            column = 0
+            row += 1
+        
+        return horizontal_seam
 
     def remove_vertical_seam(self, seam: list[int]):
         '''

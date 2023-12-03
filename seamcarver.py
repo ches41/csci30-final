@@ -106,7 +106,7 @@ class SeamCarver(Picture):
         vertical_seam.insert(0, total_energy[height-1].index(min(total_energy[height-1])))
         column = vertical_seam[0]
         
-        while (row >= 0):
+        while (row > 0):
             vertical_seam.insert(0, prev[row][column])
             column = vertical_seam[0]
             row -= 1
@@ -175,7 +175,6 @@ class SeamCarver(Picture):
         
         horizontal_seam = []
         horizontal_seam = self.find_vertical_seam()
-        horizontal_seam.pop(0)
         
         # convert values in horizontal seam
         
@@ -210,7 +209,7 @@ class SeamCarver(Picture):
         """
         if self.width() == 1:
             raise SeamError
-        if len(seam) != self.height():
+        if len(seam) != self.height() - 1:
             raise SeamError
         for i in range(len(seam) - 1):
             if abs(seam[i] - seam[i + 1]) > 1:

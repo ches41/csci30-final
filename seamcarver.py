@@ -33,11 +33,9 @@ class SeamCarver(Picture):
             raise SeamError
         if len(seam) != self.height():
             raise SeamError
-        i = 0
-        while i < len(seam) - 1:
+        for i in range(len(seam) - 1):
             if abs(seam[i] - seam[i + 1]) > 1:
                 raise SeamError
-            i += 1
 
         for row in range(len(seam)):
             for column in range(seam[row], self.width() - 1):
@@ -50,7 +48,78 @@ class SeamCarver(Picture):
         """
         Remove a horizontal seam from the picture
         """
-        raise NotImplementedError
+        # transpose the actual image
+
+        original_image = {}
+        transposed_image = {}
+        new_seam = []
+
+        og_width = self.width()
+        og_height = self.height()
+        new_width = self.height()
+        new_height = self.width()
+
+        # save old image
+
+        column = 0
+        row = 0
+
+        while row < og_height:
+            while column < og_width:
+                original_image[row][column] = self[row, column]
+                column += 1
+            column = 0
+            row += 1
+
+        # create transposed image
+
+        column = 0
+        row = 0
+
+        while row < new_height:
+            while column < new_width:
+                transposed_image[row][column] = self[
+                    (abs((og_width - 1) - column)), row
+                ]
+                column += 1
+            column = 0
+            row += 1
+
+        self.clear()
+
+        column = 0
+        row = 0
+
+        while row < new_height:
+            while column < new_width:
+                self[row, column] = transposed_image[row][column]
+                column += 1
+            column = 0
+            row += 1
+
+        # convert values in horizontal seam
+
+        pixel = 0
+
+        while pixel < (len(seam) - 1):
+            new_seam[pixel] = abs((og_height - 1) - seam[pixel])
+            pixel += 1
+
+        self.remove_vertical_seam(new_seam)
+
+        # revert image to original
+
+        self.clear()
+
+        column = 0
+        row = 0
+
+        while row < og_height:
+            while column < og_width:
+                self[row, column] = original_image[row][column]
+                column += 1
+            column = 0
+            row += 1
 
 
 class SeamError(Exception):

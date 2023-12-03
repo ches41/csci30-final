@@ -2,39 +2,56 @@
 
 from picture import Picture
 
+
 class SeamCarver(Picture):
     ## TO-DO: fill in the methods below
     def energy(self, i: int, j: int) -> float:
-        '''
+        """
         Return the energy of pixel at column i and row j
-        '''
+        """
         raise NotImplementedError
 
     def find_vertical_seam(self) -> list[int]:
-        '''
+        """
         Return a sequence of indices representing the lowest-energy
         vertical seam
-        '''
+        """
         raise NotImplementedError
 
     def find_horizontal_seam(self) -> list[int]:
-        '''
+        """
         Return a sequence of indices representing the lowest-energy
         horizontal seam
-        '''
+        """
         raise NotImplementedError
 
     def remove_vertical_seam(self, seam: list[int]):
-        '''
+        """
         Remove a vertical seam from the picture
-        '''
-        raise NotImplementedError
+        """
+        if self.width() == 1:
+            raise SeamError
+        if len(seam) != self.height():
+            raise SeamError
+        i = 0
+        while i < len(seam) - 1:
+            if abs(seam[i] - seam[i + 1]) > 1:
+                raise SeamError
+            i += 1
+
+        for row in range(len(seam)):
+            for column in range(seam[row], self.width() - 1):
+                self[column, row] = self[column + 1, row]
+            del self[self._width - 1, row]
+
+        self._width -= 1
 
     def remove_horizontal_seam(self, seam: list[int]):
-        '''
+        """
         Remove a horizontal seam from the picture
-        '''
+        """
         raise NotImplementedError
+
 
 class SeamError(Exception):
     pass

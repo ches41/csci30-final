@@ -214,9 +214,9 @@ class SeamCarver(Picture):
 
         # convert values in horizontal seam
 
-        pixel = 1
+        pixel = 0
 
-        while pixel < (len(horizontal_seam) - 1):
+        while pixel < (len(horizontal_seam)):
             horizontal_seam[pixel] = abs((og_height - 1) - horizontal_seam[pixel])
             pixel += 1
 
@@ -274,7 +274,7 @@ class SeamCarver(Picture):
 
         original_image = {}
         transposed_image = {}
-        new_seam = []
+        new_seam = [0 for x in range(len(seam))]
 
         # save old image
 
@@ -319,7 +319,7 @@ class SeamCarver(Picture):
 
         pixel = 0
 
-        while pixel < (len(seam) - 1):
+        while pixel < (len(seam)):
             new_seam[pixel] = abs((og_height - 1) - seam[pixel])
             pixel += 1
 

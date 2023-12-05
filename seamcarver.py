@@ -6,6 +6,7 @@ from picture import Picture
 
 
 class SeamCarver(Picture):
+    # --- part 1: energy calculation ---
     def energy(self, i: int, j: int) -> float:
         """
         Return the energy of pixel at column i and row j
@@ -18,10 +19,10 @@ class SeamCarver(Picture):
     def changeEnergyX(self, i, j):
         width = self.width()
         if (i - 1) < 0:
-            previousPixel = self[(width - 1), j]
+            previousPixel = self[(width - 1), 0]
         else:
             previousPixel = self[(i - 1), j]
-        if (i + 1) <= width:
+        if (i + 1) > width:
             nextPixel = self[0, j]
         else:
             nextPixel = self[(i + 1), j]
@@ -36,7 +37,7 @@ class SeamCarver(Picture):
             previousPixel = self[i, (height - 1)]
         else:
             previousPixel = self[i, (j - 1)]
-        if (j + 1) >= height:
+        if (j + 1) > height:
             nextPixel = self[i, 0]
         else:
             nextPixel = self[i, (j + 1)]
@@ -45,6 +46,7 @@ class SeamCarver(Picture):
         blueY = abs(nextPixel[2] - previousPixel[2])
         return redY**2 + greenY**2 + blueY**2
 
+    # --- part 2: seam identification ---
     def find_vertical_seam(self) -> list[int]:
         """
         Return a sequence of indices representing the lowest-energy
@@ -187,10 +189,12 @@ class SeamCarver(Picture):
 
         while row < new_height:
             while column < new_width:
-                transposed_image[column, row] = self[row, abs(column - (og_height - 1))]
+                transposed_image[column, row] = self[row, abs(og_height-1-column)]
                 column += 1
             column = 0
             row += 1
+            
+        # set image to transposed image
 
         self.clear()
 
@@ -207,18 +211,18 @@ class SeamCarver(Picture):
             column = 0
             row += 1
 
-        # run vertical seam on transposed image
+        # run vertical seam on image now transposed
 
         horizontal_seam = []
         horizontal_seam = self.find_vertical_seam()
 
         # convert values in horizontal seam
 
-        pixel = 0
+        # pixel = 0
 
-        while pixel < (len(horizontal_seam)):
-            horizontal_seam[pixel] = abs((og_height - 1) - horizontal_seam[pixel])
-            pixel += 1
+        # while pixel < (len(horizontal_seam)):
+        #     horizontal_seam[pixel] = abs((og_height - 1) - horizontal_seam[pixel])
+        #     pixel += 1
 
         # revert image to original
 
@@ -238,6 +242,8 @@ class SeamCarver(Picture):
             row += 1
 
         return horizontal_seam
+    
+    # --- part 3: seam removal ---
 
     def remove_vertical_seam(self, seam: list[int]):
         """
@@ -262,6 +268,7 @@ class SeamCarver(Picture):
         """
         Remove a horizontal seam from the picture
         """
+        
         # transpose the actual image
 
         og_width = self.width()
@@ -269,24 +276,21 @@ class SeamCarver(Picture):
         new_width = self.height()
         new_height = self.width()
 
-        # original_image = [([0] * og_width) for i in range(og_height)]
-        # transposed_image = [([0] * new_width) for i in range(new_height)]
-
         original_image = {}
         transposed_image = {}
         new_seam = [0 for x in range(len(seam))]
 
         # save old image
 
-        column = 0
-        row = 0
+        # column = 0
+        # row = 0
 
-        while row < og_height:
-            while column < og_width:
-                original_image[column, row] = self[column, row]
-                column += 1
-            column = 0
-            row += 1
+        # while row < og_height:
+        #     while column < og_width:
+        #         original_image[column, row] = self[column, row]
+        #         column += 1
+        #     column = 0
+        #     row += 1
 
         # create transposed image
 
@@ -295,7 +299,7 @@ class SeamCarver(Picture):
 
         while row < new_height:
             while column < new_width:
-                transposed_image[column, row] = self[row, abs(column - (og_height - 1))]
+                transposed_image[column, row] = self[row, abs(og_height-1-column)]
                 column += 1
             column = 0
             row += 1
@@ -317,25 +321,37 @@ class SeamCarver(Picture):
 
         # convert values in horizontal seam
 
-        pixel = 0
+        # pixel = 0
 
-        while pixel < (len(seam)):
-            new_seam[pixel] = abs((og_height - 1) - seam[pixel])
-            pixel += 1
+        # while pixel < (len(seam)):
+        #     new_seam[pixel] = abs((og_height - 1) - seam[pixel])
+        #     pixel += 1
 
-        self.remove_vertical_seam(new_seam)
+        self.remove_vertical_seam(seam)
+        
+        # revert transposed image
 
-        # revert image to original
+        column = 0
+        row = 0
+
+        while row < og_height-1:
+            while column < og_width:
+                original_image[column, row] = self[abs(og_height-2-row), column]
+                column += 1
+            column = 0
+            row += 1
+
+        # revert image to original (maintain new height as new width)
 
         self.clear()
 
         column = 0
         row = 0
 
+        self._height = self._width
         self._width = og_width
-        self._height = og_height
 
-        while row < og_height:
+        while row < og_height-1:
             while column < og_width:
                 self[column, row] = original_image[column, row]
                 column += 1

@@ -3,3 +3,6 @@ __pycache__/
 
 # ignore the venv folder
 seamcarvingenv/
+
+# ignore the test files
+seamcarver_tests_sample.py

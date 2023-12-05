@@ -11,6 +11,8 @@ class SeamCarver(Picture):
         """
         Return the energy of pixel at column i and row j
         """
+        if not (0 <= i < self.width() and 0 <= j < self.height()):
+            raise IndexError("Pixel coordinates out of bounds")
 
         changeEX = self.changeEnergyX(i, j)
         changeEY = self.changeEnergyY(i, j)
@@ -18,14 +20,17 @@ class SeamCarver(Picture):
 
     def changeEnergyX(self, i, j):
         width = self.width()
+        if not (0 <= i < width and 0 <= j < self.height()):
+            raise IndexError("Pixel coordinates out of bounds")
+
         if (i - 1) < 0:
-            previousPixel = self[(width - 1), 0]
+            previousPixel = self[width - 1, j]
         else:
-            previousPixel = self[(i - 1), j]
-        if (i + 1) > width:
+            previousPixel = self[i - 1, j]
+        if (i + 1) >= width:
             nextPixel = self[0, j]
         else:
-            nextPixel = self[(i + 1), j]
+            nextPixel = self[i + 1, j]
         redX = abs(nextPixel[0] - previousPixel[0])
         greenX = abs(nextPixel[1] - previousPixel[1])
         blueX = abs(nextPixel[2] - previousPixel[2])
@@ -33,19 +38,21 @@ class SeamCarver(Picture):
 
     def changeEnergyY(self, i, j):
         height = self.height()
+        if not (0 <= i < self.width() and 0 <= j < height):
+            raise IndexError("Pixel coordinates out of bounds")
+
         if (j - 1) < 0:
-            previousPixel = self[i, (height - 1)]
+            previousPixel = self[i, height - 1]
         else:
-            previousPixel = self[i, (j - 1)]
-        if (j + 1) > height:
+            previousPixel = self[i, j - 1]
+        if (j + 1) >= height:
             nextPixel = self[i, 0]
         else:
-            nextPixel = self[i, (j + 1)]
+            nextPixel = self[i, j + 1]
         redY = abs(nextPixel[0] - previousPixel[0])
         greenY = abs(nextPixel[1] - previousPixel[1])
         blueY = abs(nextPixel[2] - previousPixel[2])
         return redY**2 + greenY**2 + blueY**2
-
     # --- part 2: seam identification ---
     def find_vertical_seam(self) -> list[int]:
         """
@@ -70,61 +77,27 @@ class SeamCarver(Picture):
             while column < width:
                 # in first row
                 if row == 0:
-                    total_energy[0][column] = self.energy(column, row)
+                    total_energy[row][column] = self.energy(column, row)
                 # in first column
                 elif column == 0:
-                    total_energy[row][column] = self.energy(column, row) + min(
-                        total_energy[row - 1][column], total_energy[row - 1][column + 1]
-                    )
-                    if (
-                        min(
-                            total_energy[row - 1][column],
-                            total_energy[row - 1][column + 1],
-                        )
-                        == total_energy[row - 1][column]
-                    ):
+                    total_energy[row][column] = self.energy(column, row) + min(total_energy[row - 1][column], total_energy[row - 1][column + 1])
+                    if (min(total_energy[row - 1], total_energy[row - 1][column + 1]) == total_energy[row - 1][column]):
                         prev[row][column] = column
                     else:
                         prev[row][column] = column + 1
                 # in last column
                 elif column == (width - 1):
-                    total_energy[row][column] = self.energy(column, row) + min(
-                        total_energy[row - 1][column - 1], total_energy[row - 1][column]
-                    )
-                    if (
-                        min(
-                            total_energy[row - 1][column - 1],
-                            total_energy[row - 1][column],
-                        )
-                        == total_energy[row - 1][column]
-                    ):
+                    total_energy[row][column] = self.energy(column, row) + min(total_energy[row - 1][column - 1], total_energy[row - 1][column])
+                    if (min(total_energy[row - 1][column - 1], total_energy[row - 1][column]) == total_energy[row - 1][column]):
                         prev[row][column] = column
                     else:
                         prev[row][column] = column - 1
                 # everything else
                 else:
-                    total_energy[row][column] = self.energy(column, row) + min(
-                        total_energy[row - 1][column - 1],
-                        total_energy[row - 1][column],
-                        total_energy[row - 1][column + 1],
-                    )
-                    if (
-                        min(
-                            total_energy[row - 1][column - 1],
-                            total_energy[row - 1][column],
-                            total_energy[row - 1][column + 1],
-                        )
-                        == total_energy[row - 1][column]
-                    ):
+                    total_energy[row][column] = self.energy(column, row) + min(total_energy[row - 1][column - 1], total_energy[row - 1][column], total_energy[row - 1][column + 1])
+                    if (min(total_energy[row - 1][column - 1], total_energy[row - 1][column], total_energy[row - 1][column + 1]) == total_energy[row - 1][column]):
                         prev[row][column] = column
-                    elif (
-                        min(
-                            total_energy[row - 1][column - 1],
-                            total_energy[row - 1][column],
-                            total_energy[row - 1][column + 1],
-                        )
-                        == total_energy[row - 1][column - 1]
-                    ):
+                    elif (min(total_energy[row - 1][column - 1], total_energy[row - 1][column], total_energy[row - 1][column + 1]) == total_energy[row - 1][column - 1]):
                         prev[row][column] = column - 1
                     else:
                         prev[row][column] = column + 1

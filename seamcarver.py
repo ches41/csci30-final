@@ -222,7 +222,7 @@ class SeamCarver(Picture):
         """
         Remove a vertical seam from the picture
         """
-        if self.width() == 1:
+        if self.width() <= 1:
             raise SeamError
         if len(seam) != self.height() - 1:
             raise SeamError

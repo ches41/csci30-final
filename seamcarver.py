@@ -223,7 +223,7 @@ class SeamCarver(Picture):
         """
         if self.width() <= 1:
             raise SeamError
-        if len(seam) != self.height() - 1:
+        if len(seam) != self.height():
             raise SeamError
         for i in range(len(seam) - 1):
             if abs(seam[i] - seam[i + 1]) > 1:
@@ -250,19 +250,6 @@ class SeamCarver(Picture):
 
         original_image = {}
         transposed_image = {}
-        new_seam = [0 for x in range(len(seam))]
-
-        # save old image
-
-        # column = 0
-        # row = 0
-
-        # while row < og_height:
-        #     while column < og_width:
-        #         original_image[column, row] = self[column, row]
-        #         column += 1
-        #     column = 0
-        #     row += 1
 
         # create transposed image
 
@@ -271,10 +258,12 @@ class SeamCarver(Picture):
 
         while row < new_height:
             while column < new_width:
-                transposed_image[column, row] = self[row, abs(og_height-1-column)]
+                transposed_image[column, row] = self[row, column]
                 column += 1
             column = 0
             row += 1
+            
+        # set image to transposed image
 
         self.clear()
 
@@ -290,40 +279,34 @@ class SeamCarver(Picture):
                 column += 1
             column = 0
             row += 1
-
-        # convert values in horizontal seam
-
-        # pixel = 0
-
-        # while pixel < (len(seam)):
-        #     new_seam[pixel] = abs((og_height - 1) - seam[pixel])
-        #     pixel += 1
-
+        
         self.remove_vertical_seam(seam)
         
         # revert transposed image
 
         column = 0
         row = 0
+        
+        og_height -= 1 # new height
 
-        while row < og_height-1:
+        while row < og_height:
             while column < og_width:
-                original_image[column, row] = self[abs(og_height-2-row), column]
+                original_image[column, row] = self[row, column]
                 column += 1
             column = 0
             row += 1
 
-        # revert image to original (maintain new height as new width)
+        # revert image to original
 
         self.clear()
 
         column = 0
         row = 0
 
-        self._height = self._width
+        self._height = og_height
         self._width = og_width
 
-        while row < og_height-1:
+        while row < og_height:
             while column < og_width:
                 self[column, row] = original_image[column, row]
                 column += 1

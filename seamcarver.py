@@ -1,9 +1,7 @@
-import math
-
 #!/usr/bin/env python3
 
 from picture import Picture
-
+import math
 
 class SeamCarver(Picture):
     
@@ -13,16 +11,27 @@ class SeamCarver(Picture):
         """
         Return the energy of pixel at column i and row j
         """
-        if not (0 <= i < self.width() and 0 <= j < self.height()):
+        
+        width = self.width();
+        height = self.height();
+        
+        if not ((0 <= i < width) and (0 <= j < height)):
             raise IndexError("Pixel coordinates out of bounds")
 
-        changeEX = self.changeEnergyX(i, j)
-        changeEY = self.changeEnergyY(i, j)
-        return math.sqrt(changeEX + changeEY)
+        XGradient = self.calculateXGradient(i, j)
+        YGradient = self.calculateYGradient(i, j)
+        
+        return math.sqrt(XGradient + YGradient)
 
-    def changeEnergyX(self, i, j):
+    def calculateXGradient(self, i, j):
+        """
+        Return the square of the x-gradient
+        """
+        
         width = self.width()
-        if not (0 <= i < width and 0 <= j < self.height()):
+        height = self.height()
+        
+        if not ((0 <= i < width) and (0 <= j < height)):
             raise IndexError("Pixel coordinates out of bounds")
 
         if (i - 1) < 0:
@@ -33,14 +42,22 @@ class SeamCarver(Picture):
             nextPixel = self[0, j]
         else:
             nextPixel = self[i + 1, j]
+            
         redX = abs(nextPixel[0] - previousPixel[0])
         greenX = abs(nextPixel[1] - previousPixel[1])
         blueX = abs(nextPixel[2] - previousPixel[2])
+        
         return redX**2 + greenX**2 + blueX**2
 
-    def changeEnergyY(self, i, j):
+    def calculateYGradient(self, i, j):
+        """
+        Return the square of the y-gradient
+        """
+        
+        width = self.width()
         height = self.height()
-        if not (0 <= i < self.width() and 0 <= j < height):
+        
+        if not ((0 <= i < width) and (0 <= j < height)):
             raise IndexError("Pixel coordinates out of bounds")
 
         if (j - 1) < 0:
@@ -51,9 +68,11 @@ class SeamCarver(Picture):
             nextPixel = self[i, 0]
         else:
             nextPixel = self[i, j + 1]
+            
         redY = abs(nextPixel[0] - previousPixel[0])
         greenY = abs(nextPixel[1] - previousPixel[1])
         blueY = abs(nextPixel[2] - previousPixel[2])
+        
         return redY**2 + greenY**2 + blueY**2
     
     # --- part 2: seam identification ---
@@ -96,7 +115,7 @@ class SeamCarver(Picture):
                         prev[row][column] = column
                     else:
                         prev[row][column] = column - 1
-                # everything else
+                # the rest
                 else:
                     total_energy[row][column] = self.energy(column, row) + min(total_energy[row - 1][column - 1], total_energy[row - 1][column], total_energy[row - 1][column + 1])
                     if (min(total_energy[row - 1][column - 1], total_energy[row - 1][column], total_energy[row - 1][column + 1]) == total_energy[row - 1][column]):
@@ -132,8 +151,6 @@ class SeamCarver(Picture):
         horizontal seam
         """
 
-        # transpose the actual image
-
         og_width = self.width()
         og_height = self.height()
         new_width = self.height()
@@ -161,7 +178,7 @@ class SeamCarver(Picture):
 
         while row < new_height:
             while column < new_width:
-                transposed_image[column, row] = self[row, abs(og_height-1-column)]
+                transposed_image[column, row] = self[row, column]
                 column += 1
             column = 0
             row += 1
@@ -183,18 +200,10 @@ class SeamCarver(Picture):
             column = 0
             row += 1
 
-        # run vertical seam on image that is now transposed
+        # run find vertical seam on image that is now transposed
 
         horizontal_seam = []
         horizontal_seam = self.find_vertical_seam()
-
-        # convert values in horizontal seam
-
-        pixel = 0
-
-        while pixel < (len(horizontal_seam)):
-            horizontal_seam[pixel] = abs((og_height - 1) - horizontal_seam[pixel])
-            pixel += 1
 
         # revert image to original
 
@@ -221,6 +230,7 @@ class SeamCarver(Picture):
         """
         Remove a vertical seam from the picture
         """
+        
         if self.width() <= 1:
             raise SeamError
         if len(seam) != self.height():
@@ -240,8 +250,6 @@ class SeamCarver(Picture):
         """
         Remove a horizontal seam from the picture
         """
-        
-        # transpose the actual image
 
         og_width = self.width()
         og_height = self.height()
@@ -279,10 +287,12 @@ class SeamCarver(Picture):
                 column += 1
             column = 0
             row += 1
+            
+        # run remove vertical seam on image that is now transposed
         
         self.remove_vertical_seam(seam)
         
-        # revert transposed image
+        # undo transpose
 
         column = 0
         row = 0
@@ -312,7 +322,6 @@ class SeamCarver(Picture):
                 column += 1
             column = 0
             row += 1
-
 
 class SeamError(Exception):
     pass

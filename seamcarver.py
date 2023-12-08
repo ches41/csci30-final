@@ -231,18 +231,21 @@ class SeamCarver(Picture):
         Remove a vertical seam from the picture
         """
         
-        if self.width() <= 1:
+        width = self.width()
+        height = self.height()
+        
+        if width <= 1:
             raise SeamError
-        if len(seam) != self.height():
+        if len(seam) != height:
             raise SeamError
         for i in range(len(seam) - 1):
             if abs(seam[i] - seam[i + 1]) > 1:
                 raise SeamError
 
         for row in range(len(seam)):
-            for column in range(seam[row], self.width() - 1):
+            for column in range(seam[row], width - 1):
                 self[column, row] = self[column + 1, row]
-            del self[self._width - 1, row]
+            del self[width - 1, row]
 
         self._width -= 1
 
